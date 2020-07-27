@@ -25,6 +25,7 @@ import { setLockTime } from '../../../actions/settings';
 import AppConstants from '../../../core/AppConstants';
 import AnimatedFox from 'react-native-animated-fox';
 import PreventScreenshot from '../../../core/PreventScreenshot';
+import { PREVIOUS_SCREEN, ONBOARDING } from '../../../constants/navigation';
 
 const PUB_KEY = process.env.MM_PUBNUB_PUB_KEY;
 
@@ -454,7 +455,7 @@ class Onboarding extends PureComponent {
 
 	onPressCreate = () => {
 		this.props.navigation.navigate('ChoosePassword', {
-			[AppConstants.PREVIOUS_SCREEN]: 'onboarding'
+			[PREVIOUS_SCREEN]: ONBOARDING
 		});
 		this.track(ANALYTICS_EVENT_OPTS.ONBOARDING_SELECTED_CREATE_NEW_PASSWORD);
 	};
