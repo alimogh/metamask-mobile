@@ -15,6 +15,7 @@ import Engine from '../../../core/Engine';
 import AppConstants from '../../../core/AppConstants';
 import PubNubWrapper from '../../../util/syncWithExtension';
 import Device from '../../../util/Device';
+import { EXISTING_USER, BIOMETRY_CHOICE, NEXT_MAKER_REMINDER } from '../../../constants/storage';
 
 const styles = StyleSheet.create({
 	mainWrapper: {
@@ -255,7 +256,7 @@ class SyncWithExtension extends PureComponent {
 			await SecureKeychain.setGenericPassword('metamask-user', password, authOptions);
 
 			if (!this.state.biometryChoice) {
-				await AsyncStorage.removeItem('@MetaMask:biometryChoice');
+				await AsyncStorage.removeItem(BIOMETRY_CHOICE);
 			} else {
 				// If the user enables biometrics, we're trying to read the password
 				// immediately so we get the permission prompt
@@ -263,16 +264,16 @@ class SyncWithExtension extends PureComponent {
 					if (Device.isIos()) {
 						await SecureKeychain.getGenericPassword();
 					}
-					await AsyncStorage.setItem('@MetaMask:biometryChoice', this.state.biometryType);
+					await AsyncStorage.setItem(BIOMETRY_CHOICE, this.state.biometryType);
 				} catch (e) {
 					Logger.error(e, 'User cancelled biometrics permission');
-					await AsyncStorage.removeItem('@MetaMask:biometryChoice');
+					await AsyncStorage.removeItem(BIOMETRY_CHOICE);
 				}
 			}
 		}
 
 		try {
-			await AsyncStorage.removeItem('@MetaMask:nextMakerReminder');
+			await AsyncStorage.removeItem(NEXT_MAKER_REMINDER);
 			await Engine.resetState();
 			await Engine.sync({
 				...this.dataToSync,
@@ -280,7 +281,7 @@ class SyncWithExtension extends PureComponent {
 				pass: password,
 				importedAccounts: this.importedAccounts
 			});
-			await AsyncStorage.setItem('@MetaMask:existingUser', 'true');
+			await AsyncStorage.setItem(EXISTING_USER, 'true');
 			this.props.passwordHasBeenSet();
 			this.props.setLockTime(AppConstants.DEFAULT_LOCK_TIMEOUT);
 			this.props.seedphraseBackedUp();

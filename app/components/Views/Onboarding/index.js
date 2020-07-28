@@ -26,6 +26,14 @@ import AppConstants from '../../../core/AppConstants';
 import AnimatedFox from 'react-native-animated-fox';
 import PreventScreenshot from '../../../core/PreventScreenshot';
 import { PREVIOUS_SCREEN, ONBOARDING } from '../../../constants/navigation';
+import {
+	EXISTING_USER,
+	BIOMETRY_CHOICE,
+	BIOMETRY_CHOICE_DISABLED,
+	PASSCODE_DISABLED,
+	NEXT_MAKER_REMINDER,
+	METRICS_OPT_IN
+} from '../../../constants/storage';
 
 const PUB_KEY = process.env.MM_PUBNUB_PUB_KEY;
 
@@ -192,7 +200,7 @@ class Onboarding extends PureComponent {
 	};
 
 	async checkIfExistingUser() {
-		const existingUser = await AsyncStorage.getItem('@MetaMask:existingUser');
+		const existingUser = await AsyncStorage.getItem(EXISTING_USER);
 		if (existingUser !== null) {
 			this.setState({ existingUser: true });
 		}
@@ -324,8 +332,8 @@ class Onboarding extends PureComponent {
 						{
 							text: strings('sync_with_extension.warning_cancel_button'),
 							onPress: async () => {
-								await AsyncStorage.removeItem('@MetaMask:biometryChoice');
-								await AsyncStorage.setItem('@MetaMask:biometryChoiceDisabled', 'true');
+								await AsyncStorage.removeItem(BIOMETRY_CHOICE);
+								await AsyncStorage.setItem(BIOMETRY_CHOICE_DISABLED, 'true');
 								this.finishSync({ biometrics: false, password });
 							},
 							style: 'cancel'
@@ -333,8 +341,8 @@ class Onboarding extends PureComponent {
 						{
 							text: strings('sync_with_extension.warning_ok_button'),
 							onPress: async () => {
-								await AsyncStorage.setItem('@MetaMask:biometryChoice', biometryType);
-								await AsyncStorage.removeItem('@MetaMask:biometryChoiceDisabled');
+								await AsyncStorage.setItem(BIOMETRY_CHOICE, biometryType);
+								await AsyncStorage.removeItem(BIOMETRY_CHOICE_DISABLED);
 								this.finishSync({ biometrics: true, biometryType, password });
 							}
 						}
@@ -361,22 +369,22 @@ class Onboarding extends PureComponent {
 			try {
 				if (Device.isIos()) {
 					await SecureKeychain.getGenericPassword();
-					await AsyncStorage.setItem('@MetaMask:biometryChoice', opts.biometryType);
+					await AsyncStorage.setItem(BIOMETRY_CHOICE, opts.biometryType);
 				}
 			} catch (e) {
 				Logger.error(e, 'User cancelled biometrics permission');
-				await AsyncStorage.removeItem('@MetaMask:biometryChoice');
-				await AsyncStorage.setItem('@MetaMask:biometryChoiceDisabled', 'true');
-				await AsyncStorage.setItem('@MetaMask:passcodeDisabled', 'true');
+				await AsyncStorage.removeItem(BIOMETRY_CHOICE);
+				await AsyncStorage.setItem(BIOMETRY_CHOICE_DISABLED, 'true');
+				await AsyncStorage.setItem(PASSCODE_DISABLED, 'true');
 			}
 		} else {
-			await AsyncStorage.removeItem('@MetaMask:biometryChoice');
-			await AsyncStorage.setItem('@MetaMask:biometryChoiceDisabled', 'true');
-			await AsyncStorage.setItem('@MetaMask:passcodeDisabled', 'true');
+			await AsyncStorage.removeItem(BIOMETRY_CHOICE);
+			await AsyncStorage.setItem(BIOMETRY_CHOICE_DISABLED, 'true');
+			await AsyncStorage.setItem(PASSCODE_DISABLED, 'true');
 		}
 
 		try {
-			await AsyncStorage.removeItem('@MetaMask:nextMakerReminder');
+			await AsyncStorage.removeItem(NEXT_MAKER_REMINDER);
 			await Engine.resetState();
 			await Engine.sync({
 				...this.dataToSync,
@@ -384,7 +392,7 @@ class Onboarding extends PureComponent {
 				importedAccounts: this.importedAccounts,
 				pass: opts.password
 			});
-			await AsyncStorage.setItem('@MetaMask:existingUser', 'true');
+			await AsyncStorage.setItem(EXISTING_USER, 'true');
 			this.props.passwordHasBeenSet();
 			this.props.setLockTime(AppConstants.DEFAULT_LOCK_TIMEOUT);
 			this.props.seedphraseBackedUp();
@@ -446,7 +454,7 @@ class Onboarding extends PureComponent {
 				Analytics.trackEvent(key);
 				return;
 			}
-			const metricsOptIn = await AsyncStorage.getItem('@MetaMask:metricsOptIn');
+			const metricsOptIn = await AsyncStorage.getItem(METRICS_OPT_IN);
 			if (!metricsOptIn) {
 				this.props.saveOnboardingEvent(key);
 			}

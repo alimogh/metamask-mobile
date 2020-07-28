@@ -14,6 +14,7 @@ import DeeplinkManager from '../../../core/DeeplinkManager';
 import Logger from '../../../util/Logger';
 import Device from '../../../util/Device';
 import SplashScreen from 'react-native-splash-screen';
+import { EXISTING_USER, ONBOARDING_WIZARD, METRICS_OPT_IN } from '../../../constants/storage';
 
 /**
  * Entry Screen that decides which screen to show
@@ -91,7 +92,7 @@ class Entry extends PureComponent {
 		DeeplinkManager.init(this.props.navigation);
 		this.unsubscribeFromBranch = Branch.subscribe(this.handleDeeplinks);
 		SplashScreen.hide();
-		const existingUser = await AsyncStorage.getItem('@MetaMask:existingUser');
+		const existingUser = await AsyncStorage.getItem(EXISTING_USER);
 		if (existingUser !== null) {
 			await this.unlockKeychain();
 		} else {
@@ -106,7 +107,7 @@ class Entry extends PureComponent {
 		}
 		const deeplink = params['+non_branch_link'] || uri || null;
 		if (deeplink) {
-			const existingUser = await AsyncStorage.getItem('@MetaMask:existingUser');
+			const existingUser = await AsyncStorage.getItem(EXISTING_USER);
 			!existingUser ? DeeplinkManager.setDeeplink(deeplink) : DeeplinkManager.parse(deeplink);
 		}
 	};
@@ -161,9 +162,9 @@ class Entry extends PureComponent {
 				const { KeyringController } = Engine.context;
 				await KeyringController.submitPassword(credentials.password);
 				// Get onboarding wizard state
-				const onboardingWizard = await AsyncStorage.getItem('@MetaMask:onboardingWizard');
+				const onboardingWizard = await AsyncStorage.getItem(ONBOARDING_WIZARD);
 				// Check if user passed through metrics opt-in screen
-				const metricsOptIn = await AsyncStorage.getItem('@MetaMask:metricsOptIn');
+				const metricsOptIn = await AsyncStorage.getItem(METRICS_OPT_IN);
 				if (!metricsOptIn) {
 					this.animateAndGoTo('OptinMetrics');
 				} else if (onboardingWizard) {
